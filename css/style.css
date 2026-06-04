@@ -1,0 +1,177 @@
+/* Γενικές Ρυθμίσεις Σελίδας */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: #333;
+}
+
+/* Η Κεντρική Κάρτα της Εφαρμογής */
+.pomodoro-card {
+    background-color: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    width: 100%;
+    max-width: 420px;
+    padding: 30px;
+    box-sizing: border-box;
+    text-align: center;
+}
+
+/* Κύριος Τίτλος */
+h1 {
+    font-size: 26px;
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+/* Ρυθμίσεις Χρόνου (Εργασία / Διάλειμμα) */
+.settings-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.setting-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: #555;
+}
+
+.setting-group input {
+    width: 60px;
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 16px;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.setting-group input:focus {
+    border-color: #4caf50;
+}
+
+/* Ενότητα Χρονομέτρου */
+.timer-section {
+    margin-bottom: 20px;
+}
+
+#status-label {
+    font-size: 20px;
+    color: #4f5d75;
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+#timer-display {
+    font-size: 64px;
+    font-weight: bold;
+    color: #4caf50; /* Πράσινο χρώμα για το χρονόμετρο */
+    margin: 0;
+    line-height: 1;
+}
+
+/* Πλαίσιο Ξυλοκόπου */
+.lumberjack-container {
+    background-color: #ffffff; /* Αλλαγή από #e8f5e9 σε λευκό (#ffffff) */
+    border: 2px dashed #a5d6a7; /* Διακεκομμένο πράσινο περίγραμμα */
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+#lumberjack-img {
+    width: 250px;
+    height: 250px;
+    object-fit: contain; /* Διατηρεί τις αναλογίες της εικόνας χωρίς να την παραμορφώνει */
+    display: block;
+}
+
+#action-text {
+    margin: 10px 0 0 0;
+    font-size: 14px;
+    color: #2e7d32;
+    font-weight: 500;
+}
+
+/* Κουμπιά Ελέγχου */
+.controls-container {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.btn {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.1s, opacity 0.2s;
+    outline: none;
+}
+
+.btn:active {
+    transform: scale(0.97); /* Μικρό εφέ πατήματος */
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Χρώματα Κουμπιών */
+.btn-start {
+    background-color: #4caf50; /* Πράσινο */
+    color: white;
+}
+
+.btn-pause {
+    background-color: #ffb74d; /* Πορτοκαλί / Κίτρινο */
+    color: white;
+}
+
+.btn-reset {
+    background-color: #757575; /* Γκρι */
+    color: white;
+}
+
+/* Κουμπί Give Up */
+.danger-zone {
+    margin-bottom: 25px;
+}
+
+.btn-giveup {
+    background-color: #ef9a9a; /* Απαλό Κόκκινο */
+    color: #5d4037;
+    width: 60%;
+}
+
+/* Μετρητής Κύκλων */
+.cycles-counter {
+    font-size: 14px;
+    color: #666;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+}
+
+#cycles-count {
+    font-weight: bold;
+    color: #333;
+}

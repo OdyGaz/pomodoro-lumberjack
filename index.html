@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pomodoro Lumberjack</title>
+    <!-- Σύνδεση με το αρχείο CSS μέσα στον φάκελο css -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="pomodoro-card">
+        <h1>Pomodoro Lumberjack</h1>
+        
+        <!-- Ρυθμίσεις Χρόνου (Εργασία & Διάλειμμα) -->
+        <div class="settings-container">
+            <div class="setting-group">
+                <label for="work-time">Work (min):</label>
+                <input type="number" id="work-time" value="25" min="1">
+            </div>
+            <div class="setting-group">
+                <label for="break-time">Break (min):</label>
+                <input type="number" id="break-time" value="5" min="1">
+            </div>
+        </div>
+
+        <!-- Ένδειξη Κατάστασης & Χρονόμετρο -->
+        <div class="timer-section">
+            <h2 id="status-label">Work</h2>
+            <div id="timer-display">25:00</div>
+        </div>
+
+        <!-- Πλαίσιο με τον Ξυλοκόπο -->
+        <div class="lumberjack-container">
+            <!-- Η αρχική εικόνα δείχνει τη στατική μορφή από τον φάκελο images -->
+            <img id="lumberjack-img" src="images/lumberjack-static.png" alt="Lumberjack">
+            <p id="action-text">Paused...</p>
+        </div>
+
+        <!-- Κουμπιά Ελέγχου -->
+        <div class="controls-container">
+            <button id="start-btn" class="btn btn-start">Start</button>
+            <button id="pause-btn" class="btn btn-pause">Pause</button>
+            <button id="reset-btn" class="btn btn-reset">Reset</button>
+        </div>
+        <div class="danger-zone">
+            <button id="giveup-btn" class="btn btn-giveup">Give Up</button>
+        </div>
+
+        <!-- Ολοκληρωμένοι Κύκλοι -->
+        <div class="cycles-counter">
+            Completed Cycles: <span id="cycles-count">0</span>
+        </div>
+    </div>
+
+    <!-- Σύνδεση με το αρχείο JavaScript μέσα στον φάκελο js -->
+    <script src="js/script.js"></script>
+</body>
+</html>
