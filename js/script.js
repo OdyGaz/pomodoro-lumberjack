@@ -11,14 +11,21 @@ const resetBtn = document.getElementById('reset-btn');
 const giveUpBtn = document.getElementById('giveup-btn');
 const cyclesCountSpan = document.getElementById('cycles-count');
 
+// Στοιχεία για το Custom Modal
+const customModal = document.getElementById('custom-modal');
+const modalTitle = document.getElementById('modal-title');
+const modalMessage = document.getElementById('modal-message');
+const modalCloseBtn = document.getElementById('modal-close-btn');
+
 // Μεταβλητές κατάστασης του χρονομέτρου
 let timeLeft;
 let timerId = null;
 let isWorkSession = true;
 let completedCycles = 0;
 
-// Καθολική μεταβλητή για τον ήχο
+// Καθολικές μεταβλητές για τον ήχο και το ξυπνητήρι
 let audioCtx = null;
+let alarmIntervalId = null; 
 
 // Αρχική ρύθμιση χρόνου με βάση την τιμή του input
 timeLeft = parseInt(workTimeInput.value) * 60;
@@ -41,7 +48,6 @@ function initAudio() {
         if (!audioCtx) {
             audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
-        // Αν ο Chrome έχει παγώσει τον ήχο, τον ενεργοποιούμε ξανά
         if (audioCtx.state === 'suspended') {
             audioCtx.resume();
         }
@@ -50,44 +56,73 @@ function initAudio() {
     }
 }
 
-// Παραγωγή συνθετικού ήχου ειδοποίησης (Beep-Beep)
-function playNotificationSound() {
-    // Σιγουρευόμαστε ότι ο ήχος είναι ενεργός
+// Έναρξη του επαναλαμβανόμενου ήχου (Alarm Loop)
+function startAlarm() {
     initAudio();
     if (!audioCtx) return;
 
-    try {
-        const playBeep = (delay, frequency, duration) => {
-            const oscillator = audioCtx.createOscillator();
-            const gainNode = audioCtx.createGain();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(audioCtx.destination);
-            
-            oscillator.type = 'sine'; // Καθαρός τόνος
-            oscillator.frequency.value = frequency;
-            
-            // Ομαλό σβήσιμο (fade out)
-            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
-            
-            oscillator.start(audioCtx.currentTime + delay);
-            oscillator.stop(audioCtx.currentTime + delay + duration);
-        };
-        
-        // Διπλό ευχάριστο μπιπ
-        playBeep(0, 587.33, 0.15); // Πρώτο μπιπ (D5)
-        playBeep(0.2, 880.00, 0.3); // Δεύτερο μπιπ (A5)
-    } catch (e) {
-        console.error("Σφάλμα κατά την αναπαραγωγή του ήχου:", e);
+    // Παίζει το πρώτο μπιπ αμέσως
+    playAlarmBeep();
+
+    // Επαναλαμβάνει τον ήχο κάθε 1.2 δευτερόλεπτα μέχρι να τον σταματήσουμε
+    alarmIntervalId = setInterval(() => {
+        playAlarmBeep();
+    }, 1200);
+}
+
+// Διακοπή του ήχου
+function stopAlarm() {
+    if (alarmIntervalId) {
+        clearInterval(alarmIntervalId);
+        alarmIntervalId = null;
     }
+}
+
+// Παραγωγή ενός μόνο μπιπ
+function playAlarmBeep() {
+    try {
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        oscillator.type = 'sine';
+        oscillator.frequency.value = 660; // Ήπιος, ευχάριστος τόνος
+        
+        // Ομαλό σβήσιμο
+        gainNode.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+        
+        oscillator.start();
+        oscillator.stop(audioCtx.currentTime + 0.6); // Διάρκεια μπιπ 0.6 δευτερόλεπτα
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// Εμφάνιση του Custom Παραθύρου (Modal)
+function showModal(title, message, callback) {
+    modalTitle.textContent = title;
+    modalMessage.textContent = message;
+    customModal.classList.remove('hidden');
+    
+    // Όταν ο χρήστης κάνει κλικ στο OK
+    modalCloseBtn.onclick = () => {
+        customModal.classList.add('hidden');
+        stopAlarm(); // Σταματάμε τον ήχο αμέσως!
+        if (callback) callback(); // Εκτέλεση της επόμενης φάσης
+    };
 }
 
 // 2. Έναρξη του Χρονομέτρου
 function startTimer() {
     if (timerId !== null) return; // Αν τρέχει ήδη, δεν κάνει τίποτα
 
-    // ΣΗΜΑΝΤΙΚΟ: Ξεκλείδωμα του ήχου επειδή αυτή η συνάρτηση καλείται από κλικ του χρήστη
+    // Ξεκλείδωμα του ήχου κατά το κλικ
     initAudio();
 
     // Κλείδωμα των πεδίων εισαγωγής κατά τη διάρκεια της λειτουργίας
@@ -132,6 +167,7 @@ function pauseTimer() {
 function resetTimer() {
     clearInterval(timerId);
     timerId = null;
+    stopAlarm(); // Σε περίπτωση που πατηθεί reset κατά τη διάρκεια του alarm
 
     workTimeInput.disabled = false;
     breakTimeInput.disabled = false;
@@ -149,6 +185,7 @@ function resetTimer() {
 function giveUp() {
     clearInterval(timerId);
     timerId = null;
+    stopAlarm();
 
     workTimeInput.disabled = false;
     breakTimeInput.disabled = false;
@@ -164,28 +201,30 @@ function giveUp() {
 
 // 6. Εναλλαγή μεταξύ Work και Break
 function switchSession() {
-    // 1. Παίζει αμέσως τον ήχο
-    playNotificationSound();
+    // Ξεκινάει ο επαναλαμβανόμενος ήχος
+    startAlarm();
 
-    // 2. Καθυστέρηση του alert κατά 600ms ώστε να ολοκληρωθεί ο ήχος (διάρκειας 500ms)
-    // προτού η JavaScript "παγώσει" τη σελίδα με το alert.
-    setTimeout(() => {
-        if (isWorkSession) {
-            completedCycles++;
-            cyclesCountSpan.textContent = completedCycles;
-            isWorkSession = false;
-            timeLeft = parseInt(breakTimeInput.value) * 60;
-            alert('Time for a break! Good job!');
-        } else {
-            isWorkSession = true;
-            timeLeft = parseInt(workTimeInput.value) * 60;
-            alert('Break is over! Time to get back to work!');
-        }
+    if (isWorkSession) {
+        completedCycles++;
+        cyclesCountSpan.textContent = completedCycles;
+        isWorkSession = false;
+        timeLeft = parseInt(breakTimeInput.value) * 60;
         
-        updateDisplay();
-        // Αυτόματη έναρξη της επόμενης φάσης
-        startTimer();
-    }, 600);
+        // Εμφάνιση custom modal αντί για alert()
+        showModal('Time for a Break! ☕', 'Good job! Time to rest your eyes.', () => {
+            updateDisplay();
+            startTimer();
+        });
+    } else {
+        isWorkSession = true;
+        timeLeft = parseInt(workTimeInput.value) * 60;
+        
+        // Εμφάνιση custom modal αντί για alert()
+        showModal("Break is Over! 🪓", 'Time to get back to work!', () => {
+            updateDisplay();
+            startTimer();
+        });
+    }
 }
 
 // Event Listeners για τα κουμπιά
