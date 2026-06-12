@@ -6,6 +6,8 @@ Instead of a standard progress bar, it features a lumberjack who chops wood duri
 ## 🚀 Live Demo
 👉 **You can try the live application here: [Online App](https://odygaz.github.io/pomodoro-lumberjack/)**
 
+🤖 **Download the Android App (Offline APK): [Download APK](https://github.com/OdyGaz/pomodoro-lumberjack/releases/download/v1.0.0/pomodoro-lumberjack.apk)**
+
 ## ✨ Features
 * **Customizable Intervals:** Set your preferred work and break times easily.
 * **Interactive Visuals:** 
