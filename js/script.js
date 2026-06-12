@@ -32,6 +32,37 @@ function updateDisplay() {
     timerDisplay.textContent = `${formattedMinutes}:${formattedSeconds}`;
 }
 
+// ΝΕΑ ΣΥΝΑΡΤΗΣΗ: Παραγωγή συνθετικού ήχου ειδοποίησης (Beep-Beep)
+function playNotificationSound() {
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        const playBeep = (delay, frequency, duration) => {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            oscillator.type = 'sine'; // Καθαρός τόνος
+            oscillator.frequency.value = frequency;
+            
+            // Ομαλό σβήσιμο (fade out) για να μην ακούγεται απότομο κλείσιμο
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
+            
+            oscillator.start(audioCtx.currentTime + delay);
+            oscillator.stop(audioCtx.currentTime + delay + duration);
+        };
+        
+        // Παράγει δύο τόνους με μικρή διαφορά χρόνου
+        playBeep(0, 587.33, 0.15); // Νότα D5
+        playBeep(0.2, 880.00, 0.3); // Νότα A5
+    } catch (e) {
+        console.error("Δεν υποστηρίζεται ή είναι απενεργοποιημένος ο ήχος:", e);
+    }
+}
+
 // 2. Έναρξη του Χρονομέτρου
 function startTimer() {
     if (timerId !== null) return; // Αν τρέχει ήδη, δεν κάνει τίποτα
@@ -117,6 +148,9 @@ function giveUp() {
 
 // 6. Εναλλαγή μεταξύ Work και Break
 function switchSession() {
+    // Παίζει τον ήχο ειδοποίησης πριν εμφανιστεί το alert
+    playNotificationSound();
+
     if (isWorkSession) {
         // Ολοκληρώθηκε η εργασία -> Προσθήκη κύκλου και μετάβαση σε Διάλειμμα
         completedCycles++;
