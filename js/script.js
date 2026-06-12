@@ -17,7 +17,7 @@ let timerId = null;
 let isWorkSession = true;
 let completedCycles = 0;
 
-// Μεταβλητή για το κανάλι ήχου (Web Audio API)
+// Καθολική μεταβλητή για τον ήχο
 let audioCtx = null;
 
 // Αρχική ρύθμιση χρόνου με βάση την τιμή του input
@@ -35,24 +35,28 @@ function updateDisplay() {
     timerDisplay.textContent = `${formattedMinutes}:${formattedSeconds}`;
 }
 
-// ΔΙΟΡΘΩΣΗ: "Ξεκλείδωμα" και αρχικοποίηση του ήχου με το πάτημα του χρήστη
+// Λειτουργία αρχικοποίησης και ξεκλειδώματος του ήχου
 function initAudio() {
-    if (!audioCtx) {
-        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    }
-    // Αν ο browser έχει βάλει τον ήχο σε αναμονή (suspended), τον ενεργοποιούμε ξανά
-    if (audioCtx && audioCtx.state === 'suspended') {
-        audioCtx.resume();
+    try {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        // Αν ο Chrome έχει παγώσει τον ήχο, τον ενεργοποιούμε ξανά
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    } catch (e) {
+        console.error("Αποτυχία ενεργοποίησης ήχου:", e);
     }
 }
 
-// ΔΙΟΡΘΩΣΗ: Αναπαραγωγή ήχου χρησιμοποιώντας το ήδη ξεκλειδωμένο audioCtx
+// Παραγωγή συνθετικού ήχου ειδοποίησης (Beep-Beep)
 function playNotificationSound() {
-    try {
-        initAudio(); // Διασφάλιση ότι ο ήχος είναι ενεργός
-        
-        if (!audioCtx) return;
+    // Σιγουρευόμαστε ότι ο ήχος είναι ενεργός
+    initAudio();
+    if (!audioCtx) return;
 
+    try {
         const playBeep = (delay, frequency, duration) => {
             const oscillator = audioCtx.createOscillator();
             const gainNode = audioCtx.createGain();
@@ -60,9 +64,10 @@ function playNotificationSound() {
             oscillator.connect(gainNode);
             gainNode.connect(audioCtx.destination);
             
-            oscillator.type = 'sine';
+            oscillator.type = 'sine'; // Καθαρός τόνος
             oscillator.frequency.value = frequency;
             
+            // Ομαλό σβήσιμο (fade out)
             gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + delay);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + duration);
             
@@ -70,19 +75,20 @@ function playNotificationSound() {
             oscillator.stop(audioCtx.currentTime + delay + duration);
         };
         
-        // Παίζει τον διπλό ήχο
-        playBeep(0, 587.33, 0.15); // D5
-        playBeep(0.2, 880.00, 0.3); // A5
+        // Διπλό ευχάριστο μπιπ
+        playBeep(0, 587.33, 0.15); // Πρώτο μπιπ (D5)
+        playBeep(0.2, 880.00, 0.3); // Δεύτερο μπιπ (A5)
     } catch (e) {
-        console.error("Σφάλμα ήχου:", e);
+        console.error("Σφάλμα κατά την αναπαραγωγή του ήχου:", e);
     }
 }
 
 // 2. Έναρξη του Χρονομέτρου
 function startTimer() {
-    initAudio(); // Ξεκλειδώνουμε τον ήχο επειδή αυτή η συνάρτηση καλείται από κλικ (start-btn)
-
     if (timerId !== null) return; // Αν τρέχει ήδη, δεν κάνει τίποτα
+
+    // ΣΗΜΑΝΤΙΚΟ: Ξεκλείδωμα του ήχου επειδή αυτή η συνάρτηση καλείται από κλικ του χρήστη
+    initAudio();
 
     // Κλείδωμα των πεδίων εισαγωγής κατά τη διάρκεια της λειτουργίας
     workTimeInput.disabled = true;
@@ -94,7 +100,6 @@ function startTimer() {
         actionText.textContent = 'Chopping!';
         statusLabel.textContent = 'Work';
     } else {
-        // Στο διάλειμμα ο ξυλοκόπος ξεκουράζεται (στατική εικόνα)
         lumberjackImg.src = 'images/lumberjack-static.png';
         actionText.textContent = 'Resting...';
         statusLabel.textContent = 'Break';
@@ -105,7 +110,6 @@ function startTimer() {
             timeLeft--;
             updateDisplay();
         } else {
-            // Όταν ο χρόνος τελειώσει, σταματάμε το τρέχον interval και αλλάζουμε φάση
             clearInterval(timerId);
             timerId = null;
             switchSession();
@@ -158,13 +162,13 @@ function giveUp() {
     actionText.textContent = 'Gave up. Start again?';
 }
 
-// 6. ΔΙΟΡΘΩΣΗ: Εναλλαγή μεταξύ Work και Break με καθυστέρηση στο Alert
+// 6. Εναλλαγή μεταξύ Work και Break
 function switchSession() {
-    // 1. Παίζει τον ήχο αμέσως
+    // 1. Παίζει αμέσως τον ήχο
     playNotificationSound();
 
-    // 2. Καθυστερούμε την εμφάνιση του alert κατά 1 δευτερόλεπτο (1000ms)
-    // ώστε να προλάβει να ακουστεί ο ήχος πριν παγώσει η σελίδα.
+    // 2. Καθυστέρηση του alert κατά 600ms ώστε να ολοκληρωθεί ο ήχος (διάρκειας 500ms)
+    // προτού η JavaScript "παγώσει" τη σελίδα με το alert.
     setTimeout(() => {
         if (isWorkSession) {
             completedCycles++;
@@ -181,7 +185,7 @@ function switchSession() {
         updateDisplay();
         // Αυτόματη έναρξη της επόμενης φάσης
         startTimer();
-    }, 1000); 
+    }, 600);
 }
 
 // Event Listeners για τα κουμπιά
